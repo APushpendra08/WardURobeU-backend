@@ -8,6 +8,7 @@ require('dotenv').config()
 
 const IMAGE_HOST_URL = "https://freeimage.host/api/1/upload"
 const IMAGE_HOST_API_KEY = process.env.IMAGE_HOST_API_KEY
+const PORT = process.env.PORT || 3000
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
@@ -62,6 +63,6 @@ app.post('/wardrobe', (req, res) => {
     res.send("Wardrobe upload")
 })
 
-app.listen(3000, () => {
-    console.log("Server started at 3000")
+app.listen(PORT, () => {
+    console.log("Server started at " + PORT)
 })
