@@ -3,6 +3,7 @@ const app = express()
 const bodyParser = require('body-parser')
 const axios = require('axios')
 const FormData = require('form-data')
+const fileUpload = require('express-fileupload')
 require('dotenv').config()
 
 
@@ -12,20 +13,46 @@ const PORT = process.env.PORT || 3000
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
+app.use(fileUpload())
+
+app.post('/', (req, res) => {
+
+    const {image} = req.files
+    if(!image) {
+        console.log("File missing")
+        return res.send("File missing")
+    }
+    
+    else {
+        console.log(image)
+        console.log("File found - POST")
+        let buffer = image.data
+        uploadImage(buffer.toString('base64'), res)
+    }
+})
 
 app.get('/', (req, res) => {
 
     const imageData = req.body.imageData
 
-    if(imageData == null)
-        return res.send("empty error data")
+    if(imageData == null) {
+        console.log("File missing")
+        return res.send("File missing")
+    } 
+    else {
+        console.log("File found - GET")
+        uploadImage(imageData, res)
+    }
 
+    
+})
 
+function uploadImage(imageData, res){
     const form = FormData()
     form.append("key", IMAGE_HOST_API_KEY)
     form.append("source", imageData)
 
-
+    console.log("Uploading file")
     axios.post(IMAGE_HOST_URL, form, { headers : form.getHeaders() })
         .then((response) => {
 
@@ -33,15 +60,18 @@ app.get('/', (req, res) => {
             if(imageURL == null)
                 imageURL = response.data.image.display_url
 
-            if(imageURL == null)
+            if(imageURL == null){
+                console.log("Upload failed")
                 return res.send("Upload failed for some reason")
+            }
 
+            console.log("Upload successful")
             res.send(imageURL)
         }).catch((err) => {
             console.log(err.response)
             res.json(err.message)
         })
-})
+}
 
 app.get('/user/signUp', (req, res) => {
     res.send("SignUp")
