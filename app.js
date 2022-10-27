@@ -4,6 +4,8 @@ const fileUpload = require('express-fileupload')
 require('dotenv').config()
 const {uploadImage} = require('./utils/FileManager')
 const userRouter = require('./routes/user')
+const mongoose = require('mongoose')
+const db = mongoose.connection
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -66,6 +68,24 @@ app.post('/wardrobe', (req, res) => {
     res.send("Wardrobe upload")
 })
 
-app.listen(PORT, () => {
-    console.log("Server started at " + PORT)
+mongoose.connect(process.env.MONGO_CONNECTION_STRING)
+
+db.on('connected', () => {
+    console.log("Mongoose - Connected")
+    app.listen(PORT, () => {
+        console.log("Server started at " + PORT)
+    })  
+})
+db.on('error', (err) => {
+    console.log("Mongoose - Error")
+    console.log(err)
+})
+db.on('disconnected', () => {
+    console.log("Mongooose - Disconnected")
+})
+process.on('SIGINT', () => {
+    db.close(() => {
+        console.log('Mongoose default connection disconnected through app termination'); 
+        process.exit(0); 
+    })
 })
