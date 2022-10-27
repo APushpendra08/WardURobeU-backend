@@ -1,19 +1,17 @@
 const express = require('express')
-const app = express()
 const bodyParser = require('body-parser')
-const axios = require('axios')
-const FormData = require('form-data')
 const fileUpload = require('express-fileupload')
 require('dotenv').config()
+const {uploadImage} = require('./utils/FileManager')
+const userRouter = require('./routes/user')
 
-
-const IMAGE_HOST_URL = "https://freeimage.host/api/1/upload"
-const IMAGE_HOST_API_KEY = process.env.IMAGE_HOST_API_KEY
+const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(fileUpload())
+app.use('/u', userRouter)
 
 app.post('/', (req, res) => {
 
@@ -47,31 +45,6 @@ app.get('/', (req, res) => {
     
 })
 
-function uploadImage(imageData, res){
-    const form = FormData()
-    form.append("key", IMAGE_HOST_API_KEY)
-    form.append("source", imageData)
-
-    console.log("Uploading file")
-    axios.post(IMAGE_HOST_URL, form, { headers : form.getHeaders() })
-        .then((response) => {
-
-            const imageURL = response.data.image.image.url
-            if(imageURL == null)
-                imageURL = response.data.image.display_url
-
-            if(imageURL == null){
-                console.log("Upload failed")
-                return res.send("Upload failed for some reason")
-            }
-
-            console.log("Upload successful")
-            res.send(imageURL)
-        }).catch((err) => {
-            console.log(err.response)
-            res.json(err.message)
-        })
-}
 
 app.get('/user/signUp', (req, res) => {
     res.send("SignUp")
