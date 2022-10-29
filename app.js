@@ -4,17 +4,39 @@ const fileUpload = require('express-fileupload')
 require('dotenv').config()
 const {uploadImage} = require('./utils/FileManager')
 const userRouter = require('./routes/user')
+const {wardrobeRouter} = require('./routes/wardrobe')
 const mongoose = require('mongoose')
+const { Rp } = require('./utils/ResponseManager')
+const jwt = require('jsonwebtoken')
 const db = mongoose.connection
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
+// middlewares
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(fileUpload())
-app.use('/u', userRouter)
 
+async function auth(req, res, next){
+    let {token} = req.body
+
+    if(!token)
+        token = req.headers['x-wuru-auth']
+
+    if(!token)
+        return res.status(403).send(Rp("Token missing", 403, false))
+
+    const payload = await jwt.verify(token, process.env.JWT_SECRET)
+    console.log(payload)
+    req.userInfo = payload
+
+    next()
+}
+
+// Routers
+app.use('/u', userRouter)
+app.use('/w', auth, wardrobeRouter)
 app.post('/', (req, res) => {
 
     const {image} = req.files
@@ -43,17 +65,7 @@ app.get('/', (req, res) => {
         console.log("File found - GET")
         uploadImage(imageData, res)
     }
-
     
-})
-
-
-app.get('/user/signUp', (req, res) => {
-    res.send("SignUp")
-})
-
-app.get('/user/signIn', (req, res) => {
-    res.send("SignIn")
 })
 
 app.get('/wardrobe', (req, res) => {
@@ -67,6 +79,10 @@ app.get('/wardrobe/:userId', (req, res) => {
 app.post('/wardrobe', (req, res) => {
     res.send("Wardrobe upload")
 })
+
+// app.listen(PORT, () => {
+//     console.log("Server started at " + PORT)
+// })
 
 mongoose.connect(process.env.MONGO_CONNECTION_STRING)
 
