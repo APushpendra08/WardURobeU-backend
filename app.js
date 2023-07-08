@@ -5,6 +5,8 @@ const axios = require('axios')
 const FormData = require('form-data')
 const fileUpload = require('express-fileupload')
 require('dotenv').config()
+const mongooose = require('mongoose')
+const pingSchema = require('./schema/pingSchema')
 
 
 const IMAGE_HOST_URL = "https://freeimage.host/api/1/upload"
@@ -29,6 +31,34 @@ app.post('/', (req, res) => {
         let buffer = image.data
         uploadImage(buffer.toString('base64'), res)
     }
+})
+
+const pingModel = mongooose.model('ping', pingSchema)
+
+app.get('/ping', (req, res) => {
+    const ts = Date.now().toString()
+    const newTS = new pingModel({ timestamp: ts})
+
+    newTS.save().then((mongoRes) => {
+        console.log(mongoRes)
+        res.send(mongoRes)
+    })
+    // console.log(ts.toString())
+        // res.send({"ts":ts.toString()})
+})
+
+app.get('/history', async (req, res) => {
+    const pingData = await pingModel.find()
+    const history = []
+    for(let index = 0; index < pingData.length; ++index){
+        let pingObj = pingData[index]
+        let ts = pingObj.timestamp
+        let datetimeString = new Date(parseInt(ts))
+        console.log(datetimeString)
+        history.push({_id: pingObj._id , time: datetimeString})
+    }
+    console.log(pingData)
+    res.send(history)
 })
 
 app.get('/', (req, res) => {
@@ -93,6 +123,13 @@ app.post('/wardrobe', (req, res) => {
     res.send("Wardrobe upload")
 })
 
-app.listen(PORT, () => {
-    console.log("Server started at " + PORT)
-})
+
+mongooose.connect(process.env.MONGO_URL)
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log("Server started at " + PORT)
+        })
+    }).catch( (e) => {
+        console.log(e)
+    })
+
