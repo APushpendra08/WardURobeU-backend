@@ -37,7 +37,11 @@ const pingModel = mongooose.model('ping', pingSchema)
 
 app.get('/ping', (req, res) => {
     const ts = Date.now().toString()
-    const newTS = new pingModel({ timestamp: ts})
+    let platform = req.query.platform
+    if(platform == null)
+        platform = "website"
+    console.log(platform)
+    const newTS = new pingModel({ timestamp: ts, platform: platform})
 
     newTS.save().then((mongoRes) => {
         console.log(mongoRes)
@@ -55,10 +59,12 @@ app.get('/history', async (req, res) => {
         let ts = pingObj.timestamp
         let datetimeString = new Date(parseInt(ts))
         console.log(datetimeString)
-        history.push({_id: pingObj._id , time: datetimeString})
+
+        // history[pingObj.platform].push({_id: pingObj._id , time: datetimeString})
+        history.push({_id: pingObj._id , time: datetimeString, platform: pingObj.platform})
     }
     console.log(pingData)
-    res.send(history)
+    res.send({"data": history})
 })
 
 app.get('/', (req, res) => {
