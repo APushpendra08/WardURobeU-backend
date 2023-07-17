@@ -4,18 +4,23 @@ const bodyParser = require('body-parser')
 const axios = require('axios')
 const FormData = require('form-data')
 const fileUpload = require('express-fileupload')
-require('dotenv').config()
 const mongooose = require('mongoose')
-const pingSchema = require('./schema/pingSchema')
+const pingRouter = require("./routes/ping")
+const wardrobeRouter = require("./routes/wardrobe")
+const pushRouter = require('./routes/push')
 
+require('dotenv').config()
 
-const IMAGE_HOST_URL = "https://freeimage.host/api/1/upload"
+const IMAGE_HOST_URL = process.env.IMAGE_HOST_URL
 const IMAGE_HOST_API_KEY = process.env.IMAGE_HOST_API_KEY
 const PORT = process.env.PORT || 3000
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(fileUpload())
+app.use(pingRouter)
+app.use(wardrobeRouter)
+app.use("/push", pushRouter)
 
 app.post('/', (req, res) => {
 
@@ -31,40 +36,6 @@ app.post('/', (req, res) => {
         let buffer = image.data
         uploadImage(buffer.toString('base64'), res)
     }
-})
-
-const pingModel = mongooose.model('ping', pingSchema)
-
-app.get('/ping', (req, res) => {
-    const ts = Date.now().toString()
-    let platform = req.query.platform
-    if(platform == null)
-        platform = "website"
-    console.log(platform)
-    const newTS = new pingModel({ timestamp: ts, platform: platform})
-
-    newTS.save().then((mongoRes) => {
-        console.log(mongoRes)
-        res.send(mongoRes)
-    })
-    // console.log(ts.toString())
-        // res.send({"ts":ts.toString()})
-})
-
-app.get('/history', async (req, res) => {
-    const pingData = await pingModel.find()
-    const history = []
-    for(let index = 0; index < pingData.length; ++index){
-        let pingObj = pingData[index]
-        let ts = pingObj.timestamp
-        let datetimeString = new Date(parseInt(ts))
-        console.log(datetimeString)
-
-        // history[pingObj.platform].push({_id: pingObj._id , time: datetimeString})
-        history.push({_id: pingObj._id , time: datetimeString, platform: pingObj.platform})
-    }
-    console.log(pingData)
-    res.send({"data": history})
 })
 
 app.get('/', (req, res) => {
@@ -115,18 +86,6 @@ app.get('/user/signUp', (req, res) => {
 
 app.get('/user/signIn', (req, res) => {
     res.send("SignIn")
-})
-
-app.get('/wardrobe', (req, res) => {
-    res.send("All category of wardrobe")
-})
-
-app.get('/wardrobe/:userId', (req, res) => {
-    res.send("Wardrobe for user")
-})
-
-app.post('/wardrobe', (req, res) => {
-    res.send("Wardrobe upload")
 })
 
 
