@@ -8,8 +8,18 @@ const mongooose = require('mongoose')
 const pingRouter = require("./routes/ping")
 const wardrobeRouter = require("./routes/wardrobe")
 const pushRouter = require('./routes/push')
+const admin = require('firebase-admin')
 
 require('dotenv').config()
+
+// const serviceAccount = require("./admin_server_key.json")
+
+// console.log(JSON.stringify(serviceAccount))
+// console.log(serviceAccount)
+
+admin.initializeApp({
+    credential: admin.credential.cert(JSON.parse(process.env.SERVICE_KEY))
+})
 
 const IMAGE_HOST_URL = process.env.IMAGE_HOST_URL
 const IMAGE_HOST_API_KEY = process.env.IMAGE_HOST_API_KEY
@@ -21,6 +31,27 @@ app.use(fileUpload())
 app.use(pingRouter)
 app.use(wardrobeRouter)
 app.use("/push", pushRouter)
+
+const token = process.env.PUSH_ID
+
+app.get("/fb", async (req, res) => {
+    const message = {
+        data: {
+            "score": "32",
+            "time": "64"
+        },
+        token: token
+    }
+
+    admin.messaging().send(message).then((fcmRes) => {
+        // console.log(fcmRes)
+        res.send({"Success" : fcmRes})
+        
+    }).catch(e => {
+        // console.log(e)
+        res.send(e)
+    })
+})
 
 app.post('/', (req, res) => {
 
