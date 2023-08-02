@@ -8,6 +8,7 @@ const eventModel = mongoose.model('events', eventSchema)
 eventRouter.post("/trackEvent", async (req, res) => {
     
     let body = req.body
+    console.log(req.body)
     let eventName = body["EVENT_NAME"]
     let eventAttrib = body["EVENT_ATTRIBUTES"]
 
