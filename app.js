@@ -9,6 +9,8 @@ const pingRouter = require("./routes/ping")
 const wardrobeRouter = require("./routes/wardrobe")
 const pushRouter = require('./routes/push')
 const admin = require('firebase-admin')
+const userRouter = require('./routes/user')
+const eventRouter = require("./routes/event")
 
 require('dotenv').config()
 
@@ -21,7 +23,7 @@ admin.initializeApp({
     credential: admin.credential.cert(JSON.parse(process.env.SERVICE_KEY))
 })
 
-const IMAGE_HOST_URL = process.env.IMAGE_HOST_URL
+const IMAGE_HOST_URL = process.env.IMAGE_HOST_URLl
 const IMAGE_HOST_API_KEY = process.env.IMAGE_HOST_API_KEY
 const PORT = process.env.PORT || 3000
 
@@ -31,6 +33,8 @@ app.use(fileUpload())
 app.use(pingRouter)
 app.use(wardrobeRouter)
 app.use("/push", pushRouter)
+app.use("/user", userRouter)
+app.use("/event", eventRouter)
 
 const token = process.env.PUSH_ID
 
@@ -123,7 +127,7 @@ app.get('/user/signIn', (req, res) => {
 mongooose.connect(process.env.MONGO_URL)
     .then(() => {
         app.listen(PORT, () => {
-            console.log("Server started at " + PORT)
+            console.log("Listening at Port " + PORT )
         })
     }).catch( (e) => {
         console.log(e)
