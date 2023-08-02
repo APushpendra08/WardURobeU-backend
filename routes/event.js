@@ -10,6 +10,11 @@ eventRouter.post("/trackEvent", async (req, res) => {
     let body = req.body
     console.log(req.body)
     let eventName = body["EVENT_NAME"]
+
+    if(eventName == null){
+        body = body["nameValuePairs"]
+    }
+    eventName = body["EVENT_NAME"]
     let eventAttrib = body["EVENT_ATTRIBUTES"]
 
     console.log(eventName , eventAttrib)
