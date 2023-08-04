@@ -5,7 +5,7 @@ const eventSchema = require("../schema/eventSchema")
 const eventModel = mongoose.model('events', eventSchema)
 
 eventRouter.post("/trackEventBatch", (req, res) => {
-    console.log(req.body)
+    console.log(req)
     res.send(req.body)
 })
 
