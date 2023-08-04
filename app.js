@@ -11,6 +11,7 @@ const pushRouter = require('./routes/push')
 const admin = require('firebase-admin')
 const userRouter = require('./routes/user')
 const eventRouter = require("./routes/event")
+const tenantRouter = require('./routes/tenants')
 
 require('dotenv').config()
 
@@ -35,6 +36,7 @@ app.use(wardrobeRouter)
 app.use("/push", pushRouter)
 app.use("/user", userRouter)
 app.use("/event", eventRouter)
+app.use("/tenant", tenantRouter)
 
 const token = process.env.PUSH_ID
 
