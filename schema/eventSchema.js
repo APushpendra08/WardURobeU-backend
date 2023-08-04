@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 
 const eventSchema = new mongoose.Schema({
-    name: String,
-    attributes: Object
+    EVENT_NAME: String,
+    EVENT_ATTRIBUTES: Object
 })
 
 module.exports = eventSchema

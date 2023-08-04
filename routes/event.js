@@ -4,9 +4,30 @@ const eventSchema = require("../schema/eventSchema")
 
 const eventModel = mongoose.model('events', eventSchema)
 
-eventRouter.post("/trackEventBatch", (req, res) => {
-    console.log(req)
-    res.send(req.body)
+eventRouter.post("/trackEventBatch", async (req, res) => {
+    let body = req.body
+    let batch = body["eventListData"]
+    if(batch == null){
+        body = body["nameValuePairs"]
+    }
+
+    batch = body["eventListData"]["values"]
+    arraydata = []
+
+    for(let i = 0; i < batch.length; ++i){
+        let data = batch[i]["nameValuePairs"]
+        console.log(data)
+        arraydata.push(data)
+    }
+
+    let newEvent = new eventModel(arraydata)
+
+    eventModel.collection.insertMany(arraydata, (err, doc) => {
+        if(err)
+            res.send(err)
+        else
+            res.send(doc)
+    })
 })
 
 eventRouter.post("/trackEvent", async (req, res) => {
@@ -36,5 +57,9 @@ eventRouter.post("/trackEvent", async (req, res) => {
         res.send(e)
     })
 })
+
+async function saveEventInDB(eventName, eventAttrib){
+
+}
 
 module.exports = eventRouter
