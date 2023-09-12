@@ -58,6 +58,47 @@ pushRouter.get("/sendMessage", async (req, res) => {
     await sendPushMessage(title, pushMessage, res)
 })
 
+pushRouter.post('/sendMessageWithToken', async (req, res) => {
+    let body = req.body
+    let token = body.fcmToken
+    let title = body.title
+    let appId = body.moe_app_id
+    let pushMessage = body.pushMessage
+    console.log(token + title + pushMessage)
+
+    await sendMessageWithToken(token, title, pushMessage, body, res)
+})
+
+async function sendMessageWithToken(fcmToken, pushTitle, pushMessage, body, res) {
+    let message = {
+        data: {
+            "gcm_title": pushTitle.toString(),
+            "gcm_alert": pushMessage.toString(),
+            "moe_app_id": body.appId ? body.appId : "8SIW681S80Z08KSHQFSTIZ8T_DEBUG",
+            "gcm_notificationType":body.gcm_notificationType ? body.gcm_notificationType :  "gcm_webNotification",
+            "push_from":"moengage",
+            "push_from_really":"AP Server/FCM",
+            "gcm_webUrl": body.gcm_webUrl? body.gcm_webUrl : "www.google.com",
+            "gcm_campaign_id":"000000000000000049523201_L_" + Math.floor(Math.random() * 1000000) ,
+            "moe_channel_id":body.moe_channel_id ? body.moe_channel_id : "general"
+        },
+        token: fcmToken
+    }
+
+    console.log(message)
+    console.log("------------------------------------------------------------------------------------------------")
+
+    await admin.messaging().send(message).then((fcmRes) => {
+        console.log("FCM Token sent result :" + fcmRes)
+        console.log("success if similar to :projects/ps-my-platform/messages/0:1694536657370639%e963d49ef9fd7ecd")
+        res.send(fcmRes)
+    }).catch((e) =>{
+        console.log(e)
+        res.send(e)
+    })
+
+}
+
 pushRouter.post("/sendMessage", async (req, res) => {
 
     let title = req.body.title
