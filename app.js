@@ -7,7 +7,7 @@ const fileUpload = require('express-fileupload')
 require('dotenv').config()
 const mongooose = require('mongoose')
 const pingSchema = require('./schema/pingSchema')
-
+const loggerSchema = require("./schema/loggerSchema")
 
 const IMAGE_HOST_URL = "https://freeimage.host/api/1/upload"
 const IMAGE_HOST_API_KEY = process.env.IMAGE_HOST_API_KEY
@@ -34,6 +34,7 @@ app.post('/', (req, res) => {
 })
 
 const pingModel = mongooose.model('ping', pingSchema)
+const loggerModel = mongooose.model('logger', loggerSchema)
 
 app.get('/ping', (req, res) => {
     const ts = Date.now().toString()
@@ -111,6 +112,42 @@ function uploadImage(imageData, res){
 
 app.get('/user/signUp', (req, res) => {
     res.send("SignUp")
+})
+
+app.post('/logger/read', async (req, res) => {
+    let uname = req.body.uname
+    if(uname == "android"){
+        const logData = await loggerModel.find()
+        const logs= []
+        for(let index = 0; index < logData.length; ++index) {
+            let logObj = logData[index]
+            logs.push(logObj)
+        }
+        console.log(logs)
+        res.send(logs)
+    } else {
+        res.send("wrong user");
+    }
+})
+
+app.post('/logger/write', (req, res) => {
+    let uname = req.body.uname
+    if(uname == "android"){
+        let log = req.body.log
+        let level = req.body.level
+        let ts = Date.now().toString()
+
+        const newLog = new loggerModel({timestamp:ts, data:log, loglevel:level});
+
+        console.log(newLog)
+        
+        newLog.save().then((mongoLogRes) => {
+            console.log(mongoLogRes)
+            res.send(mongoLogRes)
+        })
+    } else {
+        res.send("wrong data");
+    }
 })
 
 app.get('/user/signIn', (req, res) => {
